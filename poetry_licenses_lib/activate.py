@@ -9,6 +9,8 @@ from typing import Union
 
 import piplicenses_lib as piplicenses
 
+from .errors import PoetryVenvError
+
 
 @lru_cache(maxsize=16)
 def get_python_sys_path(
@@ -104,6 +106,9 @@ def activate_poetry(
         raise ValueError(f"{pyproject_toml=} is not a file.")
 
     python_exe, virtual_env = get_poetry_env_path(pyproject)
+
+    if any(not Path(p).exists() for p in (python_exe, virtual_env)):
+        raise PoetryVenvError(pyproject)
 
     with activate_python(python_exe):
         with activate_venv(virtual_env):
