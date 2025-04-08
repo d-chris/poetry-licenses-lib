@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
@@ -12,7 +14,6 @@ from .errors import PoetryVenvError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from typing import Union
 
 
 class PoetryEnv(NamedTuple):
@@ -64,8 +65,8 @@ def get_poetry_env_path(
 
 @contextmanager
 def activate_venv(
-    path: Union[str, os.PathLike],
-) -> Generator[None, None, None]:
+    path: str | os.PathLike,
+) -> Generator[None]:
     """set environment variable for virtual environment."""
 
     venv = os.environ.get("VIRTUAL_ENV")
@@ -84,8 +85,8 @@ def activate_venv(
 
 @contextmanager
 def activate(
-    *path: Union[str, os.PathLike],
-) -> Generator[None, None, None]:
+    *path: str | os.PathLike,
+) -> Generator[None]:
     """Activate the given path by modifying sys.path."""
 
     original_path = sys.path[:]
@@ -99,8 +100,8 @@ def activate(
 
 @contextmanager
 def activate_python(
-    python_exe: Union[str, os.PathLike],
-) -> Generator[list[str], None, None]:
+    python_exe: str | os.PathLike,
+) -> Generator[list[str]]:
     """Activate the python environment."""
 
     python = Path(python_exe).resolve()
@@ -116,8 +117,8 @@ def activate_python(
 
 @contextmanager
 def activate_poetry(
-    pyproject_toml: Union[str, os.PathLike],
-) -> Generator[PoetryEnv, None, None]:
+    pyproject_toml: str | os.PathLike,
+) -> Generator[PoetryEnv]:
     """Activate the poetry environment."""
 
     pyproject = Path(pyproject_toml).resolve()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -5,12 +7,11 @@ import piplicenses_lib as piplicenses
 
 if TYPE_CHECKING:
     import os
-    from typing import Union
 
 
 @lru_cache(maxsize=16)
 def get_packages(
-    python_path: Union[str, os.PathLike, None] = None,
+    python_path: str | os.PathLike | None = None,
     **kwargs,
 ) -> dict[str, piplicenses.PackageInfo]:
     """Retrieve the relevant information for the given package."""

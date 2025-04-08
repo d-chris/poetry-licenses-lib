@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import os
-    from typing import Union
 
     from poetry.core.packages.dependency import Dependency
 
@@ -17,7 +18,7 @@ class PoetryError(RuntimeError):
 class PoetryVenvError(PoetryError):
     """no venv found for the given pyproject.toml file."""
 
-    def __init__(self, pyproject: Union[str, os.PathLike]) -> None:
+    def __init__(self, pyproject: str | os.PathLike) -> None:
         self.pyproject = Path(pyproject)
         super().__init__(f"No '.venv' found for {pyproject=}")
 

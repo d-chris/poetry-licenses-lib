@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -57,7 +59,7 @@ def get_poetry_package_group(
     dependency_group: str = "main",
     strict: bool = True,
     **kwargs,
-) -> Generator[tuple[Dependency, piplicenses.PackageInfo], None, None]:
+) -> Generator[tuple[Dependency, piplicenses.PackageInfo]]:
     """Retrieve the relevant information for the given package group."""
 
     dependencies = poetry_dependencies(pyproject_toml)
