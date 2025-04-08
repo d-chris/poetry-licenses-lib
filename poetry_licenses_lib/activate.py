@@ -78,7 +78,7 @@ def activate(
 @contextmanager
 def activate_python(
     python_exe: Union[str, os.PathLike],
-) -> Generator[None, None, None]:
+) -> Generator[list[str], None, None]:
     """Activate the python environment."""
 
     python = Path(python_exe).resolve()
@@ -89,13 +89,13 @@ def activate_python(
     path = get_python_sys_path(python)
 
     with activate(*path):
-        yield
+        yield path
 
 
 @contextmanager
 def activate_poetry(
     pyproject_toml: Union[str, os.PathLike],
-) -> Generator[None, None, None]:
+) -> Generator[tuple[str, str], None, None]:
     """Activate the poetry environment."""
 
     pyproject = Path(pyproject_toml).resolve()
@@ -107,4 +107,4 @@ def activate_poetry(
 
     with activate_python(python_exe):
         with activate_venv(virtual_env):
-            yield
+            yield python_exe, virtual_env
