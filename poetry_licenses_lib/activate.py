@@ -20,6 +20,14 @@ class PoetryEnv(NamedTuple):
     path: str
     """location of the virtual environment."""
 
+    def __call__(self) -> bool:
+        """Check if the environment is valid."""
+        for item in self:
+            if not item or not Path(item).exists():
+                return False
+
+        return True
+
 
 @lru_cache(maxsize=16)
 def get_python_sys_path(
@@ -116,7 +124,7 @@ def activate_poetry(
 
     poetry = get_poetry_env_path(pyproject)
 
-    if any(not Path(p).exists() for p in poetry):
+    if poetry() is False:
         raise PoetryVenvError(pyproject)
 
     with activate_python(poetry.python):
