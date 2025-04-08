@@ -42,9 +42,8 @@ def get_poetry_packages(
     """Retrieve the packages from a Poetry project."""
 
     with activate_poetry(pyproject_toml) as poetry:
-        python, _ = poetry
         return get_packages(
-            python_path=python,
+            python_path=poetry.python,
             **kwargs,
         )
 

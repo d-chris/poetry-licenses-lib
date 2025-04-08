@@ -5,11 +5,20 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import Union
+from typing import NamedTuple, Union
 
 import piplicenses_lib as piplicenses
 
 from .errors import PoetryVenvError
+
+
+class PoetryEnv(NamedTuple):
+    """Poetry environment."""
+
+    python: str
+    """path to the python executable."""
+    path: str
+    """location of the virtual environment."""
 
 
 @lru_cache(maxsize=16)
@@ -24,7 +33,7 @@ def get_python_sys_path(
 @lru_cache(maxsize=16)
 def get_poetry_env_path(
     pyproject_toml: Path,
-) -> tuple[str, str]:
+) -> PoetryEnv:
     """Get the poetry environment."""
 
     command = ["poetry", "env", "info", "--directory", str(pyproject_toml.parent)]
@@ -39,7 +48,7 @@ def get_poetry_env_path(
         text=True,
     ).strip()
 
-    return python_exe, virtual_env
+    return PoetryEnv(python_exe, virtual_env)
 
 
 @contextmanager
@@ -97,7 +106,7 @@ def activate_python(
 @contextmanager
 def activate_poetry(
     pyproject_toml: Union[str, os.PathLike],
-) -> Generator[tuple[str, str], None, None]:
+) -> Generator[PoetryEnv, None, None]:
     """Activate the poetry environment."""
 
     pyproject = Path(pyproject_toml).resolve()
@@ -105,11 +114,11 @@ def activate_poetry(
     if not pyproject.is_file():
         raise ValueError(f"{pyproject_toml=} is not a file.")
 
-    python_exe, virtual_env = get_poetry_env_path(pyproject)
+    poetry = get_poetry_env_path(pyproject)
 
-    if any(not Path(p).exists() for p in (python_exe, virtual_env)):
+    if any(not Path(p).exists() for p in poetry):
         raise PoetryVenvError(pyproject)
 
-    with activate_python(python_exe):
-        with activate_venv(virtual_env):
-            yield python_exe, virtual_env
+    with activate_python(poetry.python):
+        with activate_venv(poetry.path):
+            yield poetry
