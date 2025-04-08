@@ -1,8 +1,11 @@
-import os
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING
 
-from poetry.core.packages.dependency import Dependency
+if TYPE_CHECKING:
+    import os
+    from typing import Union
+
+    from poetry.core.packages.dependency import Dependency
 
 
 class PoetryError(RuntimeError):

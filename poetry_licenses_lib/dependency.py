@@ -1,14 +1,18 @@
-from collections.abc import Generator
 from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import piplicenses_lib as piplicenses
-from poetry.core.packages.dependency import Dependency
 from poetry.factory import Factory
 
 from .activate import activate_poetry
 from .errors import PoetryDependencyError
 from .licenses import get_packages
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    import piplicenses_lib as piplicenses
+    from poetry.core.packages.dependency import Dependency
 
 
 def poetry_dependencies(pyproject_toml: str) -> dict[str, list[Dependency]]:

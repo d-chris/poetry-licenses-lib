@@ -1,15 +1,18 @@
 import os
 import subprocess
 import sys
-from collections.abc import Generator
 from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import NamedTuple, Union
+from typing import TYPE_CHECKING, NamedTuple
 
 import piplicenses_lib as piplicenses
 
 from .errors import PoetryVenvError
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from typing import Union
 
 
 class PoetryEnv(NamedTuple):

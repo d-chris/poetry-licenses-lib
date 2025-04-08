@@ -1,8 +1,11 @@
-import os
 from functools import lru_cache
-from typing import Union
+from typing import TYPE_CHECKING
 
 import piplicenses_lib as piplicenses
+
+if TYPE_CHECKING:
+    import os
+    from typing import Union
 
 
 @lru_cache(maxsize=16)
