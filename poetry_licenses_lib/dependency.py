@@ -57,6 +57,7 @@ def get_poetry_packages(
 def get_poetry_package_group(
     pyproject_toml: str,
     dependency_group: str = "main",
+    *,
     strict: bool = False,
     **kwargs,
 ) -> Generator[tuple[Dependency, piplicenses.PackageInfo]]:

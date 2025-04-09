@@ -34,10 +34,16 @@ class PoetryDependencyError(PoetryError):
             extras = dependency.in_extras
 
             if extras:
-                message = f"optional {package=} must be installed as {extras=}"
+                message = f"optional {package=} missing, installed as {extras=}"
             else:
                 message = f"optional {package=} must be installed"
         else:
-            message = f"{package=} not installed in '.venv'"
+            groups = dependency.groups
+
+            if groups:
+                groups = list(groups)
+                message = f"{package=} missing, install with {groups=}"
+            else:
+                message = f"{package=} not installed in '.venv'"
 
         super().__init__(message)

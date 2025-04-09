@@ -24,14 +24,14 @@ def get_python_sys_path(
 
 @contextmanager
 def activate_venv(
-    path: str | os.PathLike,
+    venv_path: str | os.PathLike,
 ) -> Generator[None]:
     """set environment variable for virtual environment."""
 
     venv = os.environ.get("VIRTUAL_ENV")
 
     try:
-        os.environ["VIRTUAL_ENV"] = str(path)
+        os.environ["VIRTUAL_ENV"] = str(venv_path)
 
         yield
 
@@ -44,14 +44,14 @@ def activate_venv(
 
 @contextmanager
 def activate(
-    *path: str | os.PathLike,
+    *sys_path: str | os.PathLike,
 ) -> Generator[None]:
     """Activate the given path by modifying sys.path."""
 
     original_path = sys.path[:]
 
     try:
-        sys.path = [str(p) for p in path] + original_path
+        sys.path = [str(p) for p in sys_path] + original_path
         yield
     finally:
         sys.path = original_path
