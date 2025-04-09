@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
@@ -9,9 +8,12 @@ from typing import TYPE_CHECKING
 from poetry.factory import Factory
 from poetry.utils.env import EnvManager
 
+from .activate import activate, activate_venv
 from .errors import PoetryVenvError
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from poetry.utils.env import VirtualEnv
 
 
@@ -34,17 +36,13 @@ def poetry_venv(pyproject_toml: str) -> VirtualEnv:
 
 
 @contextmanager
-def activate_poetry(pyproject_toml: str):
+def activate_poetry(pyproject_toml: str) -> Generator[VirtualEnv]:
     """Activate a virtual environment by modifying sys.path."""
-
-    original_sys_path = sys.path[:]
 
     try:
         venv = poetry_venv(pyproject_toml)
-        sys.path = venv.sys_path + sys.path
-
-        yield venv
     except IndexError as e:
         raise PoetryVenvError(pyproject_toml) from e
-    finally:
-        sys.path = original_sys_path
+
+    with activate(*venv.sys_path), activate_venv(venv.path):
+        yield venv

@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from poetry.factory import Factory
 
-from .activate import activate_poetry
 from .errors import PoetryDependencyError
+from .legacy import activate_poetry
 from .licenses import get_packages
 
 if TYPE_CHECKING:
@@ -57,7 +57,7 @@ def get_poetry_packages(
 def get_poetry_package_group(
     pyproject_toml: str,
     dependency_group: str = "main",
-    strict: bool = True,
+    strict: bool = False,
     **kwargs,
 ) -> Generator[tuple[Dependency, piplicenses.PackageInfo]]:
     """Retrieve the relevant information for the given package group."""
