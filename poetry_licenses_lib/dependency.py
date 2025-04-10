@@ -16,6 +16,12 @@ if TYPE_CHECKING:
     import piplicenses_lib as piplicenses
     from poetry.core.packages.dependency import Dependency
 
+    class PackageInfo(piplicenses.PackageInfo):
+        @property
+        def dependency(self) -> Dependency:
+            """The Poetry dependency associated with this package license."""
+            raise NotImplementedError("This property is not set/implemented.")
+
 
 def poetry_dependencies(pyproject_toml: str) -> dict[str, list[Dependency]]:
     """Retrieve the grouped dependencies from a Poetry project."""
@@ -44,11 +50,11 @@ def poetry_dependencies(pyproject_toml: str) -> dict[str, list[Dependency]]:
 def get_poetry_packages(
     pyproject_toml: str,
     **kwargs,
-) -> dict[str, piplicenses.PackageInfo]:
+) -> Generator[tuple[str, piplicenses.PackageInfo]]:
     """Retrieve the packages from a Poetry project."""
 
     with activate_poetry(pyproject_toml) as poetry:
-        return get_packages(
+        yield from get_packages(
             python_path=poetry.python,
             **kwargs,
         )
@@ -60,7 +66,7 @@ def get_poetry_package_group(
     *,
     strict: bool = False,
     **kwargs,
-) -> Generator[tuple[Dependency, piplicenses.PackageInfo]]:
+) -> Generator[tuple[str, PackageInfo]]:
     """Retrieve the relevant information for the given package group."""
 
     dependencies = poetry_dependencies(pyproject_toml)
@@ -69,7 +75,7 @@ def get_poetry_package_group(
     if grouped_dependencies is None:
         raise ValueError(f"{grouped_dependencies=} not found in {pyproject_toml=}")
 
-    licenses = get_poetry_packages(pyproject_toml, **kwargs)
+    licenses = dict(get_poetry_packages(pyproject_toml, **kwargs))
 
     for dependency in grouped_dependencies:
 
@@ -78,4 +84,6 @@ def get_poetry_package_group(
         if strict is True and license is None:
             raise PoetryDependencyError(dependency)
 
-        yield dependency, license
+        setattr(license, "dependency", dependency)
+
+        yield dependency.name, license
