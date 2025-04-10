@@ -84,9 +84,9 @@ def get_poetry_package_group(
 
         license = licenses.get(dependency.name, None)
 
-        if strict is True and license is None:
+        if license is not None:
+            setattr(license, "dependency", dependency)
+        elif strict is True:
             raise PoetryDependencyError(dependency)
-
-        setattr(license, "dependency", dependency)
 
         yield dependency.name, license

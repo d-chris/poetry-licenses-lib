@@ -30,6 +30,21 @@ def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
     assert subprocess.check_call(create, cwd=cwd) == 0, "creating pyproject.toml failed"
     assert toml.is_file(), f"{toml=} not found"
 
+    add = [
+        "poetry",
+        "add",
+        "--no-interaction",
+        "--quiet",
+        "--group",
+        "test",
+        "git+https://github.com/d-chris/pytest-doctestplus.git",
+        "--optional",
+        "--directory",
+        cwd,
+    ]
+
+    assert subprocess.check_call(add, cwd=cwd) == 0, "adding optional tox failed"
+
     try:
         yield toml
     finally:
