@@ -12,12 +12,13 @@ from .activate import activate, activate_venv
 from .errors import PoetryVenvError
 
 if TYPE_CHECKING:
+    import os
     from collections.abc import Generator
 
     from poetry.utils.env import VirtualEnv
 
 
-def poetry_venv(pyproject_toml: str) -> VirtualEnv:
+def poetry_venv(pyproject_toml: str | os.PathLike) -> VirtualEnv:
     """Retrieve the virtual environment for a Poetry project."""
 
     toml = Path(pyproject_toml).resolve(True)
@@ -36,7 +37,7 @@ def poetry_venv(pyproject_toml: str) -> VirtualEnv:
 
 
 @contextmanager
-def activate_poetry(pyproject_toml: str) -> Generator[VirtualEnv]:
+def activate_poetry(pyproject_toml: str | os.PathLike) -> Generator[VirtualEnv]:
     """Activate a virtual environment by modifying sys.path."""
 
     try:

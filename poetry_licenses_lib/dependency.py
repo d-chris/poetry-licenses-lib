@@ -11,6 +11,7 @@ from .legacy import activate_poetry
 from .licenses import get_packages
 
 if TYPE_CHECKING:
+    import os
     from collections.abc import Generator
 
     import piplicenses_lib as piplicenses
@@ -23,7 +24,9 @@ if TYPE_CHECKING:
             raise NotImplementedError("This property is not set/implemented.")
 
 
-def poetry_dependencies(pyproject_toml: str) -> dict[str, list[Dependency]]:
+def poetry_dependencies(
+    pyproject_toml: str | os.PathLike,
+) -> dict[str, list[Dependency]]:
     """Retrieve the grouped dependencies from a Poetry project."""
 
     toml = Path(pyproject_toml).resolve(True)
@@ -48,7 +51,7 @@ def poetry_dependencies(pyproject_toml: str) -> dict[str, list[Dependency]]:
 
 
 def get_poetry_packages(
-    pyproject_toml: str,
+    pyproject_toml: str | os.PathLike,
     **kwargs,
 ) -> Generator[tuple[str, piplicenses.PackageInfo]]:
     """Retrieve the packages from a Poetry project."""
@@ -61,7 +64,7 @@ def get_poetry_packages(
 
 
 def get_poetry_package_group(
-    pyproject_toml: str,
+    pyproject_toml: str | os.PathLike,
     dependency_group: str = "main",
     *,
     strict: bool = False,
