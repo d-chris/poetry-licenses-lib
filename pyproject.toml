@@ -15,3 +15,6 @@ include = [ "poetry_licenses_lib/py.typed" ]
 python = "^3.9"
 poetry = "<2.0.0"
 pip-licenses-lib = "^0.5.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.5"
