@@ -1,21 +1,18 @@
+from __future__ import annotations
+
 import os
 import subprocess
-from pathlib import Path
-from shutil import rmtree
 
 import pytest
+from pathlibutil import Path
 
 
-@pytest.fixture(scope="session")
-def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
-    """Fixture to create a pyproject.toml file using Poetry."""
+def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
+    """ "Create a pyproject.toml file using Poetry."""
 
-    tmp_path = tmp_path_factory.mktemp("poetry_project")
+    cwd = str(cwd) if cwd else os.getcwd()
 
-    toml = tmp_path / "pyproject.toml"
-    cwd = str(toml.parent)
-
-    create = [
+    init = [
         "poetry",
         "init",
         "--no-interaction",
@@ -27,8 +24,7 @@ def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
         "--directory",
         cwd,
     ]
-    assert subprocess.check_call(create, cwd=cwd) == 0, "creating pyproject.toml failed"
-    assert toml.is_file(), f"{toml=} not found"
+    subprocess.check_call(init, cwd=cwd)
 
     add = [
         "poetry",
@@ -42,13 +38,23 @@ def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
         "--directory",
         cwd,
     ]
+    subprocess.check_call(add, cwd=cwd)
 
-    assert subprocess.check_call(add, cwd=cwd) == 0, "adding optional tox failed"
+    return Path(cwd).joinpath("pyproject.toml").resolve(True)
+
+
+@pytest.fixture(scope="session")
+def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
+    """Fixture to create a pyproject.toml file using Poetry."""
+
+    tmp_path = tmp_path_factory.mktemp("poetry_project")
+
+    toml = create_pyproject(tmp_path)
 
     try:
         yield toml
     finally:
-        rmtree(tmp_path, ignore_errors=True)
+        Path(tmp_path).delete(recursive=True)
 
 
 @pytest.fixture(scope="session")

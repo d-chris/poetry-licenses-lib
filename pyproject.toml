@@ -19,6 +19,21 @@ pip-licenses-lib = "^0.5.0"
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
+pathlibutil = "^0.3.5"
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = "tests"
+addopts = [
+  "-s",
+  "--color=yes",
+  #   "--cov=poetry-licenses-lib",
+  #   "--cov-report=term-missing:skip-covered",
+  #   "--cov-report=xml",
+]
 
 [tool.coverage.report]
 exclude_lines = [ "if TYPE_CHECKING:" ]

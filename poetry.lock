@@ -754,6 +754,20 @@ files = [
 ]
 
 [[package]]
+name = "pathlibutil"
+version = "0.3.5"
+description = "inherits from pathlib.Path with methods for hashing, copying, deleting and more"
+optional = false
+python-versions = "<4.0.0,>=3.8.1"
+files = [
+    {file = "pathlibutil-0.3.5-py3-none-any.whl", hash = "sha256:82f2adcb91ea6918c4a49b9e624860348accd5a0cbeaea8e23ae4df7b34d8eab"},
+    {file = "pathlibutil-0.3.5.tar.gz", hash = "sha256:974f58ed970f2cf4a302888fad7db7eec355c18271bc42e70f56d12c7a0d2a25"},
+]
+
+[package.extras]
+7z = ["py7zr (>=0.20.2)"]
+
+[[package]]
 name = "pexpect"
 version = "4.9.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -1348,4 +1362,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "de931b8f4600ac01bb7c78a9cf4536e62effeb0c7eb82099119db97b72b3c095"
+content-hash = "3bfa2e938758c30b3926f282b4c0e30ac141b3bf29fc66d51692a29f66004b1b"
