@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -8,7 +9,7 @@ from pathlibutil import Path
 
 
 def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
-    """ "Create a pyproject.toml file using Poetry."""
+    """Create a pyproject.toml file using Poetry."""
 
     cwd = str(cwd) if cwd else os.getcwd()
 
@@ -43,30 +44,17 @@ def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
     return Path(cwd).joinpath("pyproject.toml").resolve(True)
 
 
-@pytest.fixture(scope="session")
-def poetry_toml(tmp_path_factory: pytest.TempPathFactory):
-    """Fixture to create a pyproject.toml file using Poetry."""
+def create_venv(pyproject_toml: str | os.PathLike) -> Path:
+    """Create a virtual environment from pyproject.toml using Poetry."""
 
-    tmp_path = tmp_path_factory.mktemp("poetry_project")
+    toml = Path(pyproject_toml).resolve(True)
+    cwd = str(toml.parent)
 
-    toml = create_pyproject(tmp_path)
-
-    try:
-        yield toml
-    finally:
-        Path(tmp_path).delete(recursive=True)
-
-
-@pytest.fixture(scope="session")
-def poetry_venv(poetry_toml: Path):
-    """Fixture to create a Poetry virtual environment for testing."""
-
-    cwd = str(poetry_toml.parent)
     env = os.environ.copy()
     env.pop("VIRTUAL_ENV", None)
     env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
 
-    setup = [
+    install = [
         "poetry",
         "install",
         "--no-interaction",
@@ -76,19 +64,53 @@ def poetry_venv(poetry_toml: Path):
         cwd,
     ]
 
-    assert subprocess.check_call(setup, env=env, cwd=cwd) == 0, "creating .venv failed"
-    assert Path(cwd).joinpath(".venv").is_dir(), f".venv not found in {cwd=}"
+    subprocess.check_call(install, env=env, cwd=cwd)
+
+    return Path(cwd).joinpath(".venv").resolve(True)
+
+
+def zip_dir(dir_path: Path, zip_path: Path) -> Path:
+    """Create a zip archive of the specified directory."""
+
+    dir = dir_path.resolve(True)
+
+    shutil.make_archive(
+        base_name=zip_path.with_suffix("").as_posix(),
+        format="zip",
+        root_dir=dir.as_posix(),
+    )
+    return zip_path
+
+
+def setup_test_environment(tmp_dir: str) -> Path:
+    """Set up a test environment using Poetry."""
+
+    # create hash filename
+    hash = Path(__file__).hexdigest("sha1")
+    cache = Path(".pytest_cache").joinpath(f"venv-{hash}.zip")
+
+    # if cached file exists restore cached files into tempdir
+    if cache.is_file():
+        return cache.unpack_archive(tmp_dir)
+
+    # else create pyproject.toml and install dependencies
+    toml = create_pyproject(tmp_dir)
+    create_venv(toml)
+
+    # create cache zip
+    tmp_dir = Path(tmp_dir).resolve()
+    zip_dir(tmp_dir, cache)
+
+    return tmp_dir
+
+
+@pytest.fixture(scope="session")
+def poetry_venv(tmp_path_factory: pytest.TempPathFactory):
+    """Fixture to create a pyproject.toml file using Poetry."""
+
+    tmp_path = tmp_path_factory.mktemp("poetry_project")
 
     try:
-        yield poetry_toml
+        yield setup_test_environment(tmp_path)
     finally:
-        teardown = [
-            "poetry",
-            "env",
-            "remove",
-            "--all",
-            "--quiet",
-            "--directory",
-            cwd,
-        ]
-        subprocess.run(teardown, env=env, cwd=cwd, check=False)
+        Path(tmp_path).parent.delete(recursive=True)
