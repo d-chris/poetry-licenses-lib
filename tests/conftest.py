@@ -36,6 +36,7 @@ def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
         "test",
         "git+https://github.com/d-chris/pytest-doctestplus.git",
         "--optional",
+        "--lock",
         "--directory",
         cwd,
     ]
@@ -86,8 +87,9 @@ def setup_test_environment(tmp_dir: str) -> Path:
     """Set up a test environment using Poetry."""
 
     # create hash filename
-    hash = Path(__file__).hexdigest("sha1")
-    cache = Path(".pytest_cache").joinpath(f"venv-{hash}.zip")
+    cache_dir = os.environ.get("PYTEST_VENV_CACHE", ".pytest_cache")
+    hash = Path(__file__).hexdigest("sha1")[:7]
+    cache = Path(cache_dir).joinpath(f"venv-{hash}.zip")
 
     # if cached file exists restore cached files into tempdir
     if cache.is_file():

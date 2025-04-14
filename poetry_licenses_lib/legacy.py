@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from poetry.factory import Factory
 from poetry.utils.env import EnvManager
 
-from .activate import activate, activate_venv
+from .activate import activate
 from .errors import PoetryVenvError
 
 if TYPE_CHECKING:
@@ -45,5 +45,5 @@ def activate_poetry(pyproject_toml: str | os.PathLike) -> Generator[VirtualEnv]:
     except IndexError as e:
         raise PoetryVenvError(pyproject_toml) from e
 
-    with activate(*venv.sys_path), activate_venv(venv.path):
+    with activate(venv.path):
         yield venv
