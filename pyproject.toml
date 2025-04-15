@@ -19,7 +19,8 @@ pip-licenses-lib = "^0.5.0"
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.5"
 pathlibutil = "^0.3.5"
-coverage = "^7.8.0"
+pytest-mock = "^3.14.0"
+pytest-cov = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.25.0"
@@ -37,14 +38,11 @@ count = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = "tests"
-addopts = [
-  "--color=yes",
-]
+addopts = [ "--color=yes" ]
 
 [tool.coverage.report]
 exclude_lines = [ "if TYPE_CHECKING:" ]
 show_missing = true
-skip_covered = true
 precision = 2
 
 [tool.coverage.run]
