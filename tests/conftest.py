@@ -3,9 +3,16 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from collections.abc import Generator
+from contextlib import ExitStack
+from tempfile import TemporaryDirectory
+from venv import EnvBuilder
 
 import pytest
 from pathlibutil import Path
+from poetry.__version__ import __version__
+
+from poetry_licenses_lib.activate import activate
 
 
 def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
@@ -83,6 +90,89 @@ def zip_dir(dir_path: Path, zip_path: Path) -> Path:
     return zip_path
 
 
+def setup_poetry(
+    *poetry_versions: str,
+    install: bool = False,
+) -> Generator[str]:
+    """
+    Create a pyproject.toml file with the given poetry versions in a temp directory,
+    optional it will install the dependencies in a virtual environment.
+    """
+
+    for version in poetry_versions:
+        with TemporaryDirectory(prefix="pip_") as venv:
+
+            # create venv to install poetry into
+            builder = EnvBuilder(with_pip=True, clear=True)
+            builder.create(venv)
+
+            with activate(venv):
+                # install poetry in venv
+                subprocess.check_call(
+                    [
+                        "pip",
+                        "install",
+                        "--disable-pip-version-check",
+                        "--no-input",
+                        "--quiet",
+                        f"poetry=={version}",
+                    ]
+                )
+
+                # from venv create a poetry package with an .venv in a temp directory
+                with TemporaryDirectory(prefix="poetry_", dir=venv) as poetry_venv:
+                    subprocess.check_call(
+                        [
+                            "poetry",
+                            "init",
+                            "--no-interaction",
+                            "--quiet",
+                            "--python",
+                            "^3.9",
+                            "--dependency",
+                            "pathlibutil==0.3.5",
+                            "--dev-dependency",
+                            "unicode-charset==0.0.0",
+                        ],
+                        cwd=poetry_venv,
+                    )
+
+                    subprocess.check_call(
+                        [
+                            "poetry",
+                            "add",
+                            "--no-interaction",
+                            "--quiet",
+                            "--group",
+                            "test",
+                            "pytest-doctestplus",
+                            "--optional",
+                            "--lock",
+                        ],
+                        cwd=poetry_venv,
+                    )
+
+                    with ExitStack() as stack:
+                        if install:
+                            env = os.environ.copy()
+                            env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
+
+                            subprocess.check_call(
+                                [
+                                    "poetry",
+                                    "install",
+                                    "--quiet",
+                                    "--no-root",
+                                ],
+                                cwd=poetry_venv,
+                                env=env,
+                            )
+
+                            stack.enter_context(activate(poetry_venv + "/.venv"))
+
+                        yield poetry_venv
+
+
 def setup_test_environment(tmp_dir: str) -> Path:
     """Set up a test environment using Poetry."""
 
@@ -96,11 +186,11 @@ def setup_test_environment(tmp_dir: str) -> Path:
         return cache.unpack_archive(tmp_dir)
 
     # else create pyproject.toml and install dependencies
-    toml = create_pyproject(tmp_dir)
-    create_venv(toml)
+
+    for venv in setup_poetry(__version__, install=True):
+        tmp_dir = Path(venv).copy(tmp_dir)
 
     # create cache zip
-    tmp_dir = Path(tmp_dir).resolve()
     zip_dir(tmp_dir, cache)
 
     return tmp_dir
