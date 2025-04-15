@@ -28,6 +28,15 @@ class PoetryDependencyError(PoetryError):
 
     def __init__(self, dependency: Dependency) -> None:
         self.dependency = dependency
+
+        message = self.message(dependency)
+
+        super().__init__(message)
+
+    @staticmethod
+    def message(dependency: Dependency) -> str:  # pragma: no cover
+        """Return the error message for a dependency."""
+
         package = dependency.name
 
         if dependency.is_optional():
@@ -46,4 +55,4 @@ class PoetryDependencyError(PoetryError):
             else:
                 message = f"{package=} not installed in '.venv'"
 
-        super().__init__(message)
+        return message
