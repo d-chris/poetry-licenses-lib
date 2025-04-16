@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from poetry_licenses_lib import PoetryDependencyError
 from poetry_licenses_lib import get_poetry_package_group
 from poetry_licenses_lib import get_poetry_packages
-from poetry_licenses_lib.errors import PoetryDependencyError
 
 
 def test_get_poetry_packages(poetry_venv: Path) -> None:

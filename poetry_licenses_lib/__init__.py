@@ -1,7 +1,11 @@
-from poetry_licenses_lib.dependency import get_poetry_package_group
-from poetry_licenses_lib.dependency import get_poetry_packages
+from poetry_licenses_lib.errors import PoetryDependencyError
+from poetry_licenses_lib.errors import PoetryVenvError
+from poetry_licenses_lib.packages import get_poetry_package_group
+from poetry_licenses_lib.packages import get_poetry_packages
 
 __all__ = [
-    "get_poetry_packages",
     "get_poetry_package_group",
+    "get_poetry_packages",
+    "PoetryDependencyError",
+    "PoetryVenvError",
 ]
