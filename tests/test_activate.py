@@ -1,18 +1,15 @@
-from unittest.mock import MagicMock
-
 import pytest
+from pytest_mock import MockerFixture
 
-from poetry_licenses_lib.activate import Path
 from poetry_licenses_lib.activate import activate
 
 
-def test_activate_raises(mocker):
+def test_activate_raises(mocker: MockerFixture) -> None:
 
-    mock_path = MagicMock(spec=Path)
-    mock_path.joinpath.return_value.is_dir.return_value = False
+    mock_path = mocker.patch("poetry_licenses_lib.activate.Path.__new__")
+    mock_path.return_value.joinpath.return_value.is_dir.return_value = False
 
-    mocker.patch("poetry_licenses_lib.activate.Path.__new__", return_value=mock_path)
-    mocker.patch("os.name", "posix")
+    mocker.patch("os.name", return_value="posix")
 
     with pytest.raises(NotADirectoryError):
         with activate("not_a_directory"):

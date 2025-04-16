@@ -15,68 +15,6 @@ from poetry.__version__ import __version__
 from poetry_licenses_lib.activate import activate
 
 
-def create_pyproject(cwd: str | os.PathLike | None = None) -> Path:
-    """Create a pyproject.toml file using Poetry."""
-
-    cwd = str(cwd) if cwd else os.getcwd()
-
-    init = [
-        "poetry",
-        "init",
-        "--no-interaction",
-        "--quiet",
-        "--dependency",
-        "git+https://github.com/d-chris/pathlibutil.git",
-        "--dev-dependency",
-        "git+https://github.com/d-chris/unicode-charset.git",
-        "--directory",
-        cwd,
-    ]
-    subprocess.check_call(init, cwd=cwd)
-
-    add = [
-        "poetry",
-        "add",
-        "--no-interaction",
-        "--quiet",
-        "--group",
-        "test",
-        "git+https://github.com/d-chris/pytest-doctestplus.git",
-        "--optional",
-        "--lock",
-        "--directory",
-        cwd,
-    ]
-    subprocess.check_call(add, cwd=cwd)
-
-    return Path(cwd).joinpath("pyproject.toml").resolve(True)
-
-
-def create_venv(pyproject_toml: str | os.PathLike) -> Path:
-    """Create a virtual environment from pyproject.toml using Poetry."""
-
-    toml = Path(pyproject_toml).resolve(True)
-    cwd = str(toml.parent)
-
-    env = os.environ.copy()
-    env.pop("VIRTUAL_ENV", None)
-    env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
-
-    install = [
-        "poetry",
-        "install",
-        "--no-interaction",
-        "--quiet",
-        "--no-root",
-        "--directory",
-        cwd,
-    ]
-
-    subprocess.check_call(install, env=env, cwd=cwd)
-
-    return Path(cwd).joinpath(".venv").resolve(True)
-
-
 def zip_dir(dir_path: Path, zip_path: Path) -> Path:
     """Create a zip archive of the specified directory."""
 
