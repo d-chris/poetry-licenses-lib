@@ -2,7 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from poetry_licenses_lib.activate import Path, activate
+from poetry_licenses_lib.activate import Path
+from poetry_licenses_lib.activate import activate
 
 
 def test_activate_raises(mocker):

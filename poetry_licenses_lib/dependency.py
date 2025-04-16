@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 
 from poetry.factory import Factory
 
-from .errors import PoetryDependencyError
-from .legacy import activate_poetry
-from .licenses import get_packages
+from poetry_licenses_lib.errors import PoetryDependencyError
+from poetry_licenses_lib.legacy import activate_poetry
+from poetry_licenses_lib.licenses import get_packages
 
 if TYPE_CHECKING:
     import os

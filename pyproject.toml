@@ -27,6 +27,7 @@ tox = "^4.25.0"
 
 [tool.isort]
 profile = "black"
+force_single_line = true
 
 [tool.flake8]
 exclude = [ ".venv/**", "tests/**" ]
@@ -34,6 +35,7 @@ type-checking-force-future-annotation = true
 type-checking-strict = true
 max-line-length = 88
 count = true
+ban-relative-imports = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"

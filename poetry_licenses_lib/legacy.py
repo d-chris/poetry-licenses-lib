@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 from poetry.factory import Factory
 from poetry.utils.env import EnvManager
 
-from .activate import activate
-from .errors import PoetryVenvError
+from poetry_licenses_lib.activate import activate
+from poetry_licenses_lib.errors import PoetryVenvError
 
 if TYPE_CHECKING:
     import os
