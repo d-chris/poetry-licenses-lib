@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Callable
 
 import pytest
@@ -6,6 +7,11 @@ import pytest
 from poetry_licenses_lib import cache_packageinfo
 from poetry_licenses_lib import get_poetry_package_group
 from poetry_licenses_lib import get_poetry_packages
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from poetry_licenses_lib.cache import CachedPackageInfo
 
 
 @pytest.mark.parametrize(
@@ -20,7 +26,7 @@ def test_cache_packageinfo(poetry_venv: Path, func: Callable) -> None:
 
     pyproject_toml = poetry_venv / "pyproject.toml"
 
-    cached_func = cache_packageinfo()(func)
+    cached_func: CachedPackageInfo[Any] = cache_packageinfo()(func)
 
     result = cached_func(pyproject_toml)
     assert isinstance(result, dict)

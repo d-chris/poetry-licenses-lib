@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -23,17 +22,13 @@ def poetry_venv(pyproject_toml: str | os.PathLike) -> VirtualEnv:
 
     toml = Path(pyproject_toml).resolve(True)
 
-    @lru_cache
-    def venv(pyproject: Path) -> VirtualEnv:
-        # Load the pyproject.toml file
-        poetry = Factory().create_poetry(pyproject)
+    # Load the pyproject.toml file
+    poetry = Factory().create_poetry(toml)
 
-        # Get the virtual environment manager
-        env_manager = EnvManager(poetry)
+    # Get the virtual environment manager
+    env_manager = EnvManager(poetry)
 
-        return env_manager.list()[0]
-
-    return venv(toml)
+    return env_manager.list()[0]
 
 
 @contextmanager
