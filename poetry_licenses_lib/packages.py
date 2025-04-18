@@ -12,19 +12,15 @@ from poetry_licenses_lib.licenses import get_packages
 if TYPE_CHECKING:
     import os
     from collections.abc import Generator
-    from typing import Protocol
-    from typing import TypeVar
 
     import piplicenses_lib as piplicenses
     from poetry.core.packages.dependency import Dependency
 
-    T = TypeVar("T", bound=piplicenses.PackageInfo, covariant=True)
-
-    class PackageInfo(Protocol[T]):
+    class PackageInfo(piplicenses.PackageInfo):
         @property
         def dependency(self) -> Dependency:
             """The Poetry dependency associated with this package license."""
-            ...
+            raise NotImplementedError
 
 
 def get_poetry_dependencies(
@@ -130,7 +126,7 @@ class PoetryPackageInfo:
         self,
         dependgency_group: str = "main",
         strict: bool = False,
-    ) -> Generator[tuple[str, PackageInfo]]:
+    ) -> Generator[tuple[str, PackageInfo | None]]:
         """Get the licenses of the packages in the poetry venv."""
 
         grouped_dependencies = self.dependencies.get(dependgency_group, None)
