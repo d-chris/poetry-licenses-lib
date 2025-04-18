@@ -36,3 +36,22 @@ def test_cache_packageinfo(poetry_venv: Path, func: Callable) -> None:
     _ = cached_func(pyproject_toml)
     assert cached_func.cache_info().hits == 1
     assert cached_func.cache_info().misses == 1
+
+
+@pytest.mark.parametrize(
+    "maxsize",
+    [
+        -1,
+        1.0,
+        "1",
+        True,
+        False,
+        None,
+    ],
+)
+def test_cache_packageinfo_maxsize(maxsize):
+    def generator():
+        yield ("key", "value")
+
+    with pytest.raises(ValueError):
+        _ = cache_packageinfo(maxsize=maxsize)(generator)

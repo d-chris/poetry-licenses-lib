@@ -31,12 +31,12 @@ def cache_as_dict(
     ) -> CachedDict[T]:
 
         @functools.lru_cache(maxsize=maxsize, **kwargs)
-        def cached_as_dict(*fargs, **fkwargs) -> Mapping[str, T]:
-            return dict(func(*fargs, **fkwargs))
+        def cached_as_dict(*args, **kwargs) -> Mapping[str, T]:
+            return dict(func(*args, **kwargs))
 
         @functools.wraps(func)
-        def wrapper(*fargs, **fkwargs) -> Mapping[str, T]:
-            return cached_as_dict(*fargs, **fkwargs)
+        def wrapper(*args, **kwargs) -> Mapping[str, T]:
+            return cached_as_dict(*args, **kwargs)
 
         # Attach cache methods
         setattr(wrapper, "cache_info", cached_as_dict.cache_info)
