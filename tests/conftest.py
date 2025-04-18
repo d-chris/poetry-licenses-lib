@@ -144,3 +144,10 @@ def poetry_venv(tmp_path_factory: pytest.TempPathFactory):
         yield setup_test_environment(tmp_path)
     finally:
         Path(tmp_path).parent.delete(recursive=True)
+
+
+@pytest.fixture(scope="session")
+def poetry_toml(poetry_venv: Path) -> Path:
+    """Fixture to create a pyproject.toml file using Poetry."""
+
+    return poetry_venv / "pyproject.toml"

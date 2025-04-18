@@ -15,10 +15,10 @@ include = [ "poetry_licenses_lib/py.typed" ]
 python = "^3.9"
 poetry = "<2.0.0"
 pip-licenses-lib = "^0.5.0"
+pathlibutil = "^0.3.5"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.5"
-pathlibutil = "^0.3.5"
 pytest-mock = "^3.14.0"
 pytest-cov = "^6.1.1"
 
@@ -43,7 +43,7 @@ testpaths = "tests"
 addopts = [ "--color=yes" ]
 
 [tool.coverage.report]
-exclude_lines = [ "^if TYPE_CHECKING:", "pragma: no cover$" ]
+exclude_lines = [ "^if TYPE_CHECKING:", "pragma: no cover$", "def __repr__" ]
 show_missing = true
 precision = 2
 
