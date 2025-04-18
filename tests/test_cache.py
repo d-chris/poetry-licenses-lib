@@ -11,7 +11,7 @@ from poetry_licenses_lib import get_poetry_packages
 if TYPE_CHECKING:
     from typing import Any
 
-    from poetry_licenses_lib.cache import CachedPackageInfo
+    from poetry_licenses_lib.cache import CachedDict
 
 
 @pytest.mark.parametrize(
@@ -26,7 +26,7 @@ def test_cache_packageinfo(poetry_venv: Path, func: Callable) -> None:
 
     pyproject_toml = poetry_venv / "pyproject.toml"
 
-    cached_func: CachedPackageInfo[Any] = cache_packageinfo()(func)
+    cached_func: CachedDict[Any] = cache_packageinfo(maxsize=1)(func)
 
     result = cached_func(pyproject_toml)
     assert isinstance(result, dict)
