@@ -5,7 +5,6 @@ import pytest
 from poetry_licenses_lib import PoetryDependencyError
 from poetry_licenses_lib import get_poetry_package_group
 from poetry_licenses_lib import get_poetry_packages
-from poetry_licenses_lib.errors import PoetryVenvError
 from poetry_licenses_lib.packages import PoetryPackageInfo
 
 
@@ -38,13 +37,13 @@ def test_get_poetry_package_group_optional_strict(poetry_toml: Path) -> None:
     """Test the get_poetry_package_group function."""
 
     with pytest.raises(PoetryDependencyError):
-        _ = dict(get_poetry_package_group(poetry_toml, "test", strict=True))
+        _ = dict(get_poetry_package_group(poetry_toml, strict=True))
 
 
 def test_get_poetry_package_group_optional(poetry_toml: Path) -> None:
     """Test the get_poetry_package_group function."""
 
-    packages = dict(get_poetry_package_group(poetry_toml, "test"))
+    packages = dict(get_poetry_package_group(poetry_toml))
 
     assert packages["pytest-doctestplus"] is None
 
@@ -70,7 +69,7 @@ def test_get_poetry_notoml_raises(func, tmp_path):
         _ = dict(func(tmp_path))
 
 
-def test_get_poetry_package_group_nolock_raises(tmp_path):
+def test_get_poetry_package_group_nolock_raises(tmp_path: Path):
 
     toml = tmp_path / "pyproject.toml"
     toml.touch()

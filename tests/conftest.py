@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 from venv import EnvBuilder
 
 import pytest
+from packaging.version import Version
 from pathlibutil import Path
 from poetry.__version__ import __version__
 
@@ -75,18 +76,21 @@ def setup_poetry(
                         cwd=poetry_venv,
                     )
 
+                    add = [
+                        "poetry",
+                        "add",
+                        "--no-interaction",
+                        "--quiet",
+                        "pytest-doctestplus",
+                        "--lock",
+                        "--optional",
+                    ]
+
+                    if Version(__version__) >= Version("2.0"):
+                        add.append("pt")
+
                     subprocess.check_call(
-                        [
-                            "poetry",
-                            "add",
-                            "--no-interaction",
-                            "--quiet",
-                            "--group",
-                            "test",
-                            "pytest-doctestplus",
-                            "--optional",
-                            "--lock",
-                        ],
+                        add,
                         cwd=poetry_venv,
                     )
 
@@ -121,7 +125,10 @@ def setup_test_environment(tmp_dir: str) -> Path:
 
     # if cached file exists restore cached files into tempdir
     if cache.is_file():
-        return cache.unpack_archive(tmp_dir)
+        try:
+            return cache.unpack_archive(tmp_dir)
+        except Exception:
+            cache.unlink(missing_ok=True)
 
     # else create pyproject.toml and install dependencies
 
@@ -129,7 +136,10 @@ def setup_test_environment(tmp_dir: str) -> Path:
         tmp_dir = Path(venv).copy(tmp_dir)
 
     # create cache zip
-    zip_dir(tmp_dir, cache)
+    try:
+        zip_dir(tmp_dir, cache)
+    except Exception:
+        cache.unlink(missing_ok=True)
 
     return tmp_dir
 
@@ -143,7 +153,7 @@ def poetry_venv(tmp_path_factory: pytest.TempPathFactory):
     try:
         yield setup_test_environment(tmp_path)
     finally:
-        Path(tmp_path).parent.delete(recursive=True)
+        shutil.rmtree(tmp_path, ignore_errors=True)
 
 
 @pytest.fixture(scope="session")
