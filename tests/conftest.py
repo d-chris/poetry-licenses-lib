@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from collections.abc import Generator
 from contextlib import ExitStack
 from tempfile import TemporaryDirectory
@@ -115,13 +116,24 @@ def setup_poetry(
                         yield poetry_venv
 
 
+def cache_name() -> str:
+    v = sys.version_info
+    python = f"py{v.major}{v.minor}"
+
+    v = Version(__version__)
+    poetry = f"poetry{v.major}{v.minor}"
+
+    hash = Path(__file__).hexdigest("sha1")[:7]
+
+    return f"venv-{sys.platform}-{python}-{poetry}-{hash}.zip"
+
+
 def setup_test_environment(tmp_dir: str) -> Path:
     """Set up a test environment using Poetry."""
 
     # create hash filename
     cache_dir = os.environ.get("PYTEST_VENV_CACHE", ".pytest_cache")
-    hash = Path(__file__).hexdigest("sha1")[:7]
-    cache = Path(cache_dir).joinpath(f"venv-{hash}.zip")
+    cache = Path(cache_dir).joinpath(cache_name())
 
     # if cached file exists restore cached files into tempdir
     if cache.is_file():
