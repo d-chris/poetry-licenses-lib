@@ -16,9 +16,8 @@ if TYPE_CHECKING:
 
 def cached_venv() -> Path:
     """Return the cache directory."""
-    ci = os.environ.get("CI", "false").lower() in ("true", "1")
 
-    root = "." if ci else os.environ.get("PYTEST_VENV_CACHE", ".pytest_cache")
+    root = os.environ.get("WORKSPACE", os.getcwd())
 
     return Path(root).joinpath(cache_name()).resolve()
 
