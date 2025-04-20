@@ -1,159 +1,26 @@
-from __future__ import annotations
-
 import os
 import shutil
-import subprocess
-import sys
-from collections.abc import Generator
-from contextlib import ExitStack
-from tempfile import TemporaryDirectory
-from venv import EnvBuilder
+from typing import TYPE_CHECKING
 
 import pytest
-from packaging.version import Version
 from pathlibutil import Path
 from poetry.__version__ import __version__
 
-from poetry_licenses_lib.activate import activate
+from .setup import cache_name
+from .setup import setup_poetry
+from .setup import zip_dir
+
+if TYPE_CHECKING:
+    from _pytest.terminal import TerminalReporter
 
 
-def zip_dir(dir_path: Path, zip_path: Path) -> Path:
-    """Create a zip archive of the specified directory."""
+def cached_venv() -> Path:
+    """Return the cache directory."""
+    ci = os.environ.get("CI", "false").lower() in ("true", "1")
 
-    dir = dir_path.resolve(True)
+    root = "." if ci else os.environ.get("PYTEST_VENV_CACHE", ".pytest_cache")
 
-    shutil.make_archive(
-        base_name=zip_path.with_suffix("").as_posix(),
-        format="zip",
-        root_dir=dir.as_posix(),
-    )
-    return zip_path
-
-
-def setup_poetry(
-    *poetry_versions: str,
-    install: bool = False,
-) -> Generator[str]:
-    """
-    Create a pyproject.toml file with the given poetry versions in a temp directory,
-    optional it will install the dependencies in a virtual environment.
-    """
-
-    for version in poetry_versions:
-        with TemporaryDirectory(prefix="pip_") as venv:
-
-            # create venv to install poetry into
-            builder = EnvBuilder(with_pip=True, clear=True)
-            builder.create(venv)
-
-            with activate(venv):
-                # install poetry in venv
-                subprocess.check_call(
-                    [
-                        "pip",
-                        "install",
-                        "--disable-pip-version-check",
-                        "--no-input",
-                        "--quiet",
-                        f"poetry=={version}",
-                    ]
-                )
-
-                # from venv create a poetry package with an .venv in a temp directory
-                with TemporaryDirectory(prefix="poetry_", dir=venv) as poetry_venv:
-                    subprocess.check_call(
-                        [
-                            "poetry",
-                            "init",
-                            "--no-interaction",
-                            "--quiet",
-                            "--python",
-                            "^3.9",
-                            "--dependency",
-                            "pathlibutil==0.3.5",
-                            "--dev-dependency",
-                            "unicode-charset==0.0.0",
-                        ],
-                        cwd=poetry_venv,
-                    )
-
-                    add = [
-                        "poetry",
-                        "add",
-                        "--no-interaction",
-                        "--quiet",
-                        "pytest-doctestplus",
-                        "--lock",
-                        "--optional",
-                    ]
-
-                    if Version(__version__) >= Version("2.0"):
-                        add.append("pt")
-
-                    subprocess.check_call(
-                        add,
-                        cwd=poetry_venv,
-                    )
-
-                    with ExitStack() as stack:
-                        if install:
-                            env = os.environ.copy()
-                            env["POETRY_VIRTUALENVS_IN_PROJECT"] = "true"
-
-                            subprocess.check_call(
-                                [
-                                    "poetry",
-                                    "install",
-                                    "--quiet",
-                                    "--no-root",
-                                ],
-                                cwd=poetry_venv,
-                                env=env,
-                            )
-
-                            stack.enter_context(activate(poetry_venv + "/.venv"))
-
-                        yield poetry_venv
-
-
-def cache_name() -> str:
-    v = sys.version_info
-    python = f"py{v.major}{v.minor}"
-
-    v = Version(__version__)
-    poetry = f"poetry{v.major}{v.minor}"
-
-    hash = Path(__file__).hexdigest("sha1")[:7]
-
-    return f"venv-{sys.platform}-{python}-{poetry}-{hash}.zip"
-
-
-def setup_test_environment(tmp_dir: str) -> Path:
-    """Set up a test environment using Poetry."""
-
-    # create hash filename
-    cache_dir = os.environ.get("PYTEST_VENV_CACHE", ".pytest_cache")
-    cache = Path(cache_dir).joinpath(cache_name())
-
-    # if cached file exists restore cached files into tempdir
-    if cache.is_file():
-        try:
-            return cache.unpack_archive(tmp_dir)
-        except Exception:
-            cache.unlink(missing_ok=True)
-
-    # else create pyproject.toml and install dependencies
-
-    for venv in setup_poetry(__version__, install=True):
-        tmp_dir = Path(venv).copy(tmp_dir)
-
-    # create cache zip
-    try:
-        zip_dir(tmp_dir, cache)
-    except Exception:
-        cache.unlink(missing_ok=True)
-
-    return tmp_dir
+    return Path(root).joinpath(cache_name()).resolve()
 
 
 @pytest.fixture(scope="session")
@@ -161,9 +28,10 @@ def poetry_venv(tmp_path_factory: pytest.TempPathFactory):
     """Fixture to create a pyproject.toml file using Poetry."""
 
     tmp_path = tmp_path_factory.mktemp("poetry_project")
+    cache = cached_venv()
 
     try:
-        yield setup_test_environment(tmp_path)
+        yield cache.unpack_archive(tmp_path)
     finally:
         shutil.rmtree(tmp_path, ignore_errors=True)
 
@@ -173,3 +41,22 @@ def poetry_toml(poetry_venv: Path) -> Path:
     """Fixture to create a pyproject.toml file using Poetry."""
 
     return poetry_venv / "pyproject.toml"
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    zip = cached_venv().resolve()
+
+    log: TerminalReporter = session.config.pluginmanager.get_plugin("terminalreporter")
+
+    log.write_sep("=", "prepare test cache", bold=True)
+
+    try:
+        if zip.is_file():
+            log.write_line("cache found...")
+        else:
+            log.write_line("create cache... (this may take a while)", flush=True)
+
+            for venv in setup_poetry(__version__, install=True):
+                zip_dir(venv, zip)
+    finally:
+        log.write_line(f"{zip.size()}   {zip.as_posix()}", flush=True)
