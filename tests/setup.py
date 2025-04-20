@@ -16,14 +16,14 @@ from poetry.__version__ import __version__
 from poetry_licenses_lib.activate import activate
 
 
-def zip_dir(dir_path: str | os.PathLike, zip_path: Path) -> Path:
+def gztar_dir(dir_path: str | os.PathLike, zip_path: Path) -> Path:
     """Create a zip archive of the specified directory."""
 
     dir = Path(dir_path).resolve(True)
 
     shutil.make_archive(
-        base_name=zip_path.with_suffix("").as_posix(),
-        format="zip",
+        base_name=zip_path.with_suffix([]).as_posix(),
+        format="gztar",
         root_dir=dir.as_posix(),
     )
     return zip_path
@@ -124,4 +124,4 @@ def cache_name() -> str:
 
     hash = Path(__file__).hexdigest("sha1")[:7]
 
-    return f"venv-{sys.platform}-{python}-{poetry}-{hash}.zip"
+    return f"venv-{sys.platform}-{python}-{poetry}-{hash}.tar.gz"

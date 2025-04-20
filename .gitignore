@@ -1,5 +1,5 @@
 .vscode/
-*.zip
+*.tar.gz
 coverage-*
 
 # Byte-compiled / optimized / DLL files

@@ -7,8 +7,8 @@ from pathlibutil import Path
 from poetry.__version__ import __version__
 
 from .setup import cache_name
+from .setup import gztar_dir
 from .setup import setup_poetry
-from .setup import zip_dir
 
 if TYPE_CHECKING:
     from _pytest.terminal import TerminalReporter
@@ -56,6 +56,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
             log.write_line("create cache... (this may take a while)", flush=True)
 
             for venv in setup_poetry(__version__, install=True):
-                zip_dir(venv, zip)
+                gztar_dir(venv, zip)
     finally:
         log.write_line(f"{zip.size()}   {zip.as_posix()}", flush=True)
