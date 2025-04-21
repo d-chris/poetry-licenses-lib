@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from typing import TYPE_CHECKING
 
 import pytest
@@ -30,6 +31,8 @@ def poetry_venv(tmp_path_factory: pytest.TempPathFactory):
     cache = cached_venv()
 
     try:
+        yield cache.unpack_archive(tmp_path, filter="tar")
+    except TypeError:
         yield cache.unpack_archive(tmp_path)
     finally:
         shutil.rmtree(tmp_path, ignore_errors=True)
